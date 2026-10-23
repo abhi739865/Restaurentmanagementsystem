@@ -13,6 +13,10 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InventoryItemController;
 use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\BlogController as PublicBlogController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\OrderTrackingController;
+use App\Http\Controllers\AdminDashboardController;
 
 Route::get('/', [HomeController::class, 'index'])
     ->name('home');
@@ -42,6 +46,35 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/orders/{order}/invoice', [OrderController::class, 'invoice'])
     ->name('orders.invoice');
 
+    Route::get('/cart', [CartController::class, 'index'])
+    ->name('cart.index');
+
+Route::post('/cart/add/{id}', [CartController::class, 'add'])
+    ->name('cart.add');
+
+Route::patch('/cart/update/{id}', [CartController::class, 'update'])
+    ->name('cart.update');
+
+Route::delete('/cart/remove/{id}', [CartController::class, 'remove'])
+    ->name('cart.remove');
+
+    Route::get('/checkout', [CheckoutController::class, 'index'])
+    ->name('checkout.index');
+
+    Route::get('/checkout', [CheckoutController::class, 'index'])
+    ->name('checkout.index');
+
+Route::post('/checkout', [CheckoutController::class, 'store'])
+    ->name('checkout.store');
+
+    Route::get(
+    '/order-confirmation/{orderNumber}',
+    [CheckoutController::class, 'confirmation']
+)->name('checkout.confirmation');
+
+Route::get('/track-order', [OrderTrackingController::class, 'index'])
+    ->name('order-tracking.search');
+
 });
 
 
@@ -57,10 +90,9 @@ Route::middleware(['auth', 'admin'])
         // Only admin can edit, update or delete orders
         Route::resource('orders', OrderController::class)
             ->only(['edit', 'update', 'destroy']);
-
-        Route::get('/admin/dashboard', function () {
-            return view('admin.dashboard');
-        })->name('admin.dashboard');
+            
+Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])
+    ->name('admin.dashboard');
 
       // User Management
     Route::resource('users', UserController::class)

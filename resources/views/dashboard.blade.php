@@ -1,141 +1,430 @@
 
 <x-app-layout>
     <x-slot name="header">
-        <h2 style="font-size:24px;font-weight:bold;color:#1f2937;">
-            Restaurant Dashboard
-        </h2>
+        <div class="staff-header">
+            <div>
+                <h2>Staff Dashboard</h2>
+                <p>Manage your restaurant operations</p>
+            </div>
+        </div>
     </x-slot>
 
-    <div style="max-width:1200px;margin:30px auto;padding:20px;">
+    <style>
+        .staff-dashboard {
+            padding: 24px;
+            background: #f8fafc;
+            min-height: 100%;
+            color: #172238;
+        }
 
-        <h3 style="font-size:22px;font-weight:bold;margin-bottom:8px;">
-            Welcome to Restaurant Management System
-        </h3>
+        .staff-dashboard * {
+            box-sizing: border-box;
+        }
 
-        <p style="color:#6b7280;margin-bottom:25px;">
-            Manage your restaurant activities from one place.
-        </p>
+        .staff-header h2 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 800;
+            color: #172238;
+        }
 
-        {{-- Dashboard Statistics --}}
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-bottom:30px;">
+        .staff-header p {
+            margin-top: 5px;
+            color: #64748b;
+            font-size: 13px;
+        }
 
-            <div style="background:white;padding:22px;border-radius:10px;border:1px solid #e5e7eb;">
-                <p style="color:#6b7280;">Total Orders</p>
-                <h3 style="font-size:28px;font-weight:bold;">
-                    {{ $stats['total_orders'] }}
-                </h3>
+        .staff-welcome {
+            padding: 28px;
+            margin-bottom: 24px;
+            border-radius: 16px;
+            color: white;
+            background: linear-gradient(120deg, #1e3a8a, #2563eb);
+        }
+
+        .staff-welcome h1 {
+            margin: 0 0 8px;
+            font-size: 26px;
+            font-weight: 800;
+        }
+
+        .staff-welcome p {
+            margin: 0;
+            color: #dbeafe;
+            font-size: 14px;
+        }
+
+        .staff-stats-grid,
+        .staff-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        .staff-card {
+            min-width: 0;
+            background: #fff;
+            border: 1px solid #e8edf4;
+            border-radius: 14px;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, .04);
+        }
+
+        .staff-stat-card {
+            padding: 22px;
+        }
+
+        .staff-stat-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .staff-stat-label {
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .staff-stat-number {
+            margin-top: 12px;
+            font-size: 30px;
+            line-height: 1.2;
+            font-weight: 800;
+            color: #172238;
+            overflow-wrap: anywhere;
+        }
+
+        .staff-stat-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .staff-section-title {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 800;
+            color: #172238;
+        }
+
+        .staff-action-card {
+            padding: 23px;
+        }
+
+        .staff-action-card h3 {
+            margin: 16px 0 7px;
+            font-size: 17px;
+            font-weight: 800;
+            color: #172238;
+        }
+
+        .staff-action-card p {
+            margin: 0 0 18px;
+            font-size: 13px;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .staff-action-link {
+            display: inline-block;
+            margin-top: 5px;
+            padding: 10px 15px;
+            background: #2563eb;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            transition: background .2s ease;
+        }
+
+        .staff-action-link:hover {
+            filter: brightness(.92);
+            color: #fff;
+        }
+
+        .staff-table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .staff-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .staff-table th {
+            padding: 15px 18px;
+            background: #f8fafc;
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: .5px;
+            white-space: nowrap;
+        }
+
+        .staff-table td {
+            padding: 16px 18px;
+            border-top: 1px solid #eef2f7;
+            color: #334155;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        .staff-table tbody tr:hover {
+            background: #fafcff;
+        }
+
+        .staff-status {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 20px;
+            background: #dbeafe;
+            color: #1d4ed8;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: capitalize;
+        }
+
+        .staff-view-link {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .staff-view-link:hover {
+            text-decoration: underline;
+        }
+
+        .staff-footer {
+            padding: 24px 0 4px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 12px;
+        }
+
+        @media (max-width: 1000px) {
+            .staff-stats-grid,
+            .staff-actions-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 600px) {
+            .staff-dashboard {
+                padding: 14px;
+            }
+
+            .staff-welcome {
+                padding: 22px;
+            }
+
+            .staff-welcome h1 {
+                font-size: 22px;
+            }
+
+            .staff-stats-grid,
+            .staff-actions-grid {
+                grid-template-columns: 1fr;
+                gap: 14px;
+            }
+
+            .staff-stat-card,
+            .staff-action-card {
+                padding: 18px;
+            }
+        }
+    </style>
+
+    <div class="staff-dashboard">
+
+        {{-- WELCOME --}}
+        <section class="staff-welcome">
+            <h1>Welcome to your Dashboard!</h1>
+            <p>Monitor orders and manage your restaurant from one place.</p>
+        </section>
+
+        {{-- STATISTICS --}}
+        <div class="staff-stats-grid">
+
+            <div class="staff-card staff-stat-card">
+                <div class="staff-stat-top">
+                    <span class="staff-stat-label">Total Orders</span>
+                    <div class="staff-stat-icon"
+                         style="background:#dbeafe;color:#1d4ed8;">📋</div>
+                </div>
+                <div class="staff-stat-number">
+                    {{ \App\Models\Order::count() }}
+                </div>
             </div>
 
-            <div style="background:white;padding:22px;border-radius:10px;border:1px solid #e5e7eb;">
-                <p style="color:#6b7280;">Total Paid Sales</p>
-                <h3 style="font-size:28px;font-weight:bold;color:#059669;">
-                    ₹{{ number_format((float) $stats['total_sales'], 2) }}
-                </h3>
+            <div class="staff-card staff-stat-card">
+                <div class="staff-stat-top">
+                    <span class="staff-stat-label">Pending Orders</span>
+                    <div class="staff-stat-icon"
+                         style="background:#fef3c7;color:#b45309;">⏳</div>
+                </div>
+                <div class="staff-stat-number">
+                    {{ \App\Models\Order::where('status', 'pending')->count() }}
+                </div>
             </div>
 
-            <div style="background:white;padding:22px;border-radius:10px;border:1px solid #e5e7eb;">
-                <p style="color:#6b7280;">Pending Orders</p>
-                <h3 style="font-size:28px;font-weight:bold;color:#d97706;">
-                    {{ $stats['pending_orders'] }}
-                </h3>
-            </div>
-
-            <div style="background:white;padding:22px;border-radius:10px;border:1px solid #e5e7eb;">
-                <p style="color:#6b7280;">Completed Orders</p>
-                <h3 style="font-size:28px;font-weight:bold;color:#16a34a;">
-                    {{ $stats['completed_orders'] }}
-                </h3>
-            </div>
-
-            <div style="background:white;padding:22px;border-radius:10px;border:1px solid #e5e7eb;">
-                <p style="color:#6b7280;">Paid Orders</p>
-                <h3 style="font-size:28px;font-weight:bold;color:#2563eb;">
-                    {{ $stats['paid_orders'] }}
-                </h3>
-            </div>
-
-            <div style="background:white;padding:22px;border-radius:10px;border:1px solid #e5e7eb;">
-                <p style="color:#6b7280;">Unpaid Orders</p>
-                <h3 style="font-size:28px;font-weight:bold;color:#dc2626;">
-                    {{ $stats['unpaid_orders'] }}
-                </h3>
+            <div class="staff-card staff-stat-card">
+                <div class="staff-stat-top">
+                    <span class="staff-stat-label">Menu Items</span>
+                    <div class="staff-stat-icon"
+                         style="background:#dcfce7;color:#15803d;">🍽️</div>
+                </div>
+                <div class="staff-stat-number">
+                    {{ \App\Models\MenuItem::count() }}
+                </div>
             </div>
 
         </div>
 
-        {{-- Existing Navigation Cards --}}
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-bottom:30px;">
+        {{-- QUICK ACTIONS --}}
+        <h3 class="staff-section-title" style="margin-bottom:16px;">
+            Quick Actions
+        </h3>
 
-            <div style="background:white;padding:22px;border-radius:10px;border:1px solid #e5e7eb;">
-                <p style="color:#6b7280;margin-bottom:10px;">Manage Orders</p>
-                <h3 style="font-size:25px;font-weight:bold;margin-bottom:15px;">Orders</h3>
+        <div class="staff-actions-grid">
+
+            <div class="staff-card staff-action-card">
+                <div class="staff-stat-icon"
+                     style="background:#dbeafe;color:#1d4ed8;">📋</div>
+                <h3>Orders</h3>
+                <p>View and manage restaurant orders.</p>
                 <a href="{{ route('orders.index') }}"
-                   style="display:inline-block;background:#2563eb;color:white;padding:10px 16px;border-radius:6px;text-decoration:none;">
-                    View Orders
+                   class="staff-action-link">
+                    Manage Orders →
                 </a>
             </div>
 
-            @if (Auth::user()->role === 'admin')
+            <div class="staff-card staff-action-card">
+                <div class="staff-stat-icon"
+                     style="background:#dcfce7;color:#15803d;">🍔</div>
+                <h3>Menu Items</h3>
+                <p>View restaurant menu items.</p>
+                <a href="{{ route('menu-items.index') }}"
+                   class="staff-action-link">
+                    Manage Menu →
+                </a>
+            </div>
 
-                <div style="background:white;padding:22px;border-radius:10px;border:1px solid #e5e7eb;">
-                    <p style="color:#6b7280;margin-bottom:10px;">Manage Food</p>
-                    <h3 style="font-size:25px;font-weight:bold;margin-bottom:15px;">Menu Items</h3>
-                    <a href="{{ url('/menu-items') }}"
-                       style="display:inline-block;background:#16a34a;color:white;padding:10px 16px;border-radius:6px;text-decoration:none;">
-                        View Menu
+            @if(auth()->check() && auth()->user()->role === 'admin')
+                <div class="staff-card staff-action-card">
+                    <div class="staff-stat-icon"
+                         style="background:#ede9fe;color:#7c3aed;">🗂️</div>
+                    <h3>Categories</h3>
+                    <p>Organize menu categories.</p>
+                    <a href="{{ route('categories.index') }}"
+                       class="staff-action-link"
+                       style="background:#7c3aed;">
+                        Manage Categories →
                     </a>
                 </div>
 
-                
-<div style="background:white;padding:22px;border-radius:10px;border:1px solid #e5e7eb;">
-    <p style="color:#6b7280;margin-bottom:10px;">Manage Stock</p>
-    <h3 style="font-size:25px;font-weight:bold;margin-bottom:15px;">Food Inventory</h3>
-    <a href="{{ route('inventory-items.index') }}"
-       style="display:inline-block;background:#16a34a;color:white;padding:10px 16px;border-radius:6px;text-decoration:none;">
-        Manage Inventory
-    </a>
-</div>
-
-
-                <div style="background:white;padding:22px;border-radius:10px;border:1px solid #e5e7eb;">
-                    <p style="color:#6b7280;margin-bottom:10px;">Organize Menu</p>
-                    <h3 style="font-size:25px;font-weight:bold;margin-bottom:15px;">Categories</h3>
-                    <a href="{{ url('/categories') }}"
-                       style="display:inline-block;background:#9333ea;color:white;padding:10px 16px;border-radius:6px;text-decoration:none;">
-                        View Categories
+                <div class="staff-card staff-action-card">
+                    <div class="staff-stat-icon"
+                         style="background:#fef3c7;color:#b45309;">🪑</div>
+                    <h3>Restaurant Tables</h3>
+                    <p>Access your restaurant's tables.</p>
+                    <a href="{{ route('restaurant-tables.index') }}"
+                       class="staff-action-link"
+                       style="background:#b45309;">
+                        Manage Tables →
                     </a>
                 </div>
-
-                <div style="background:white;padding:22px;border-radius:10px;border:1px solid #e5e7eb;">
-                    <p style="color:#6b7280;margin-bottom:10px;">Manage Seating</p>
-                    <h3 style="font-size:25px;font-weight:bold;margin-bottom:15px;">Restaurant Tables</h3>
-                    <a href="{{ url('/restaurant-tables') }}"
-                       style="display:inline-block;background:#ea580c;color:white;padding:10px 16px;border-radius:6px;text-decoration:none;">
-                        View Tables
-                    </a>
-                </div>
-
-
-
             @endif
 
         </div>
 
-        {{-- Quick Start --}}
-        <div style="background:white;padding:24px;border:1px solid #e5e7eb;border-radius:10px;">
-            <h3 style="font-size:20px;font-weight:bold;margin-bottom:12px;">
-                Quick Start
-            </h3>
+        {{-- RECENT ORDERS --}}
+        <section class="staff-card" style="padding:0;overflow:hidden;">
+            <div style="padding:22px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+                <div>
+                    <h3 class="staff-section-title">Recent Orders</h3>
+                    <p style="font-size:12px;color:#94a3b8;margin-top:5px;">
+                        Latest restaurant orders
+                    </p>
+                </div>
 
-            <p style="color:#4b5563;margin-bottom:15px;">
-                Create a new customer order here.
-            </p>
+                <a href="{{ route('orders.index') }}"
+                   class="staff-action-link"
+                   style="margin-top:0;">
+                    View All Orders →
+                </a>
+            </div>
 
-            <a href="{{ route('orders.create') }}"
-               style="display:inline-block;background:#111827;color:white;padding:12px 20px;border-radius:6px;text-decoration:none;">
-                + Create New Order
-            </a>
-        </div>
+            <div class="staff-table-wrap">
+                <table class="staff-table">
+                    <thead>
+                        <tr>
+                            <th>ORDER NUMBER</th>
+                            <th>CUSTOMER</th>
+                            <th>DATE</th>
+                            <th>AMOUNT</th>
+                            <th>STATUS</th>
+                            <th>ACTION</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @forelse(\App\Models\Order::latest()->take(5)->get() as $order)
+                            <tr>
+                                <td style="font-weight:700;">
+                                    {{ $order->order_number }}
+                                </td>
+
+                                <td>
+                                    {{ $order->customer_name ?: 'Walk-in Customer' }}
+                                </td>
+
+                                <td>
+                                    {{ $order->created_at?->format('d M Y') ?? '—' }}
+                                </td>
+
+                                <td style="font-weight:700;">
+                                    ₹{{ number_format((float) $order->total_amount, 2) }}
+                                </td>
+
+                                <td>
+                                    <span class="staff-status">
+                                        {{ str_replace('_', ' ', $order->status) }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <a href="{{ route('orders.show', $order) }}"
+                                       class="staff-view-link">
+                                        View →
+                                    </a>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6"
+                                    style="text-align:center;padding:30px;color:#94a3b8;">
+                                    No orders found yet.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <p class="staff-footer">
+            Restaurant Management System · Staff Workspace
+        </p>
 
     </div>
 </x-app-layout>

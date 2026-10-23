@@ -91,7 +91,7 @@
             text-align: center;
             color: white;
             background:
-                linear-gradient(120deg, #21150feF, #74371ed9),
+                linear-gradient(120deg, #21150fef, #74371ed9),
                 radial-gradient(circle at 80% 20%, #e8ad68, #482719);
         }
 
@@ -166,6 +166,25 @@
             max-width: 620px;
         }
 
+        .flash-message {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 14px 18px;
+            border-radius: 8px;
+        }
+
+        .flash-success {
+            background: #e4f6e8;
+            color: #17652a;
+            border: 1px solid #b9e5c2;
+        }
+
+        .flash-error {
+            background: #fde8e8;
+            color: #9b2020;
+            border: 1px solid #f5c4c4;
+        }
+
         .search-wrap {
             max-width: 650px;
             margin: 0 auto 30px;
@@ -214,7 +233,7 @@
         .menu-grid {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 24px;
+            gap: 30px;
         }
 
         .food-card {
@@ -230,8 +249,30 @@
             box-shadow: 0 12px 28px #40200d12;
         }
 
+        /* Menu item image */
+        .food-image {
+            width: 100%;
+            height: 220px;
+            overflow: hidden;
+            background: #f2dfcd;
+        }
+
+        .food-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform .3s ease;
+        }
+
+        .food-card:hover .food-image img {
+            transform: scale(1.04);
+        }
+
         .food-placeholder {
-            height: 175px;
+            width: 100%;
+            height: 100%;
+            min-height: 175px;
             background: linear-gradient(135deg, #f2dfcd, #e7c5a6);
             display: flex;
             justify-content: center;
@@ -273,6 +314,44 @@
             color: #a74720;
             font-size: 19px;
             font-weight: 800;
+        }
+
+        /* Add to Cart form */
+        .add-to-cart-form {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .add-to-cart-form input {
+            width: 65px;
+            padding: 10px;
+            border: 1px solid #e8d9cc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .add-to-cart-form button {
+            flex: 1;
+            background: #b45325;
+            color: white;
+            border: 0;
+            padding: 11px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .add-to-cart-form button:hover {
+            background: #8d3e1c;
+        }
+
+        .add-to-cart-form button:disabled {
+            opacity: .65;
+            cursor: wait;
         }
 
         .empty {
@@ -382,6 +461,10 @@
             .section {
                 padding: 45px 18px;
             }
+
+            .food-meta {
+                align-items: flex-start;
+            }
         }
     </style>
 </head>
@@ -403,6 +486,7 @@
             <a href="{{ route('menu.public') }}">Our Menu</a>
             <a href="{{ url('/blog') }}">Blog</a>
             <a href="{{ url('/about') }}">About Us</a>
+            <a href="{{ route('cart.index') }}">🛒 My Cart</a>
             <a href="#menu" class="nav-cta">Explore Dishes</a>
         </nav>
     </header>
@@ -410,20 +494,44 @@
     <section class="hero">
         <div class="hero-content">
             <span class="eyebrow">Good Food, Great Moments</span>
+
             <h1>Discover Your Next Favourite Dish</h1>
+
             <p>
                 From comforting classics to delicious restaurant specials,
                 explore a menu made to bring people together.
             </p>
-            <a href="#menu" class="btn btn-primary">Explore Our Menu ↓</a>
+
+            <a href="#menu" class="btn btn-primary">
+                Explore Our Menu ↓
+            </a>
         </div>
     </section>
 
     <main>
         <section class="section" id="menu">
+
+            {{-- Existing success/error messages, hidden because SweetAlert handles them --}}
+            @if(session('success'))
+                <div id="cart-success-message" hidden>{{ session('success') }}</div>
+            @endif
+
+            @if(session('error'))
+                <div id="cart-error-message" hidden>{{ session('error') }}</div>
+            @endif
+
+            @if($errors->any())
+                <div id="cart-validation-errors" hidden>
+                    @foreach($errors->all() as $error)
+                        <div>{{ $error }}</div>
+                    @endforeach
+                </div>
+            @endif
+
             <div class="section-heading">
                 <span class="eyebrow">Made for Food Lovers</span>
                 <h2>Our Delicious Menu</h2>
+
                 <p>
                     Explore our selection of dishes and find something
                     delicious for your next meal.
@@ -440,7 +548,11 @@
             </div>
 
             <div class="category-list">
-                <button type="button" class="filter-btn active" data-category="all">
+                <button
+                    type="button"
+                    class="filter-btn active"
+                    data-category="all"
+                >
                     All Dishes
                 </button>
 
@@ -456,21 +568,44 @@
             </div>
 
             @if($menuItems->isEmpty())
+
                 <div class="empty">
                     <h3>Our menu is getting ready!</h3>
                     <p>Please check back soon for our delicious dishes.</p>
                 </div>
+
             @else
+
                 <div class="menu-grid" id="menuGrid">
+
                     @foreach($menuItems as $item)
+
                         <article
                             class="food-card"
                             data-name="{{ strtolower($item->name) }}"
                             data-category="{{ $item->category->name ?? 'Our Special' }}"
                         >
-                            <div class="food-placeholder" aria-hidden="true">🍽️</div>
+
+                            <div class="food-image">
+                                @if($item->image)
+                                    <img
+                                        src="{{ asset('storage/' . $item->image) }}"
+                                        alt="{{ $item->name }}"
+                                        loading="lazy"
+                                        onerror="this.style.display='none'; this.nextElementSibling.hidden=false;"
+                                    >
+                                    <div class="food-placeholder" hidden>
+                                        🍽️
+                                    </div>
+                                @else
+                                    <div class="food-placeholder">
+                                        🍽️
+                                    </div>
+                                @endif
+                            </div>
 
                             <div class="food-info">
+
                                 <span class="category-label">
                                     {{ $item->category->name ?? 'Our Special' }}
                                 </span>
@@ -483,47 +618,101 @@
 
                                 <div class="food-meta">
                                     <span>Fresh &amp; Delicious</span>
+
                                     <span class="price">
                                         ₹{{ number_format((float) $item->price, 2) }}
                                     </span>
                                 </div>
+
+                                @if($item->is_available)
+                                    <form
+                                        action="{{ route('cart.add', $item->id) }}"
+                                        method="POST"
+                                        class="add-to-cart-form"
+                                    >
+                                        @csrf
+
+                                        <input
+                                            type="number"
+                                            name="quantity"
+                                            value="1"
+                                            min="1"
+                                            max="20"
+                                            required
+                                            aria-label="Quantity for {{ $item->name }}"
+                                        >
+
+                                        <button type="submit">
+                                            Add to Cart 🛒
+                                        </button>
+                                    </form>
+                                @else
+                                    <div style="margin-top:18px;color:#9b2020;font-weight:bold;">
+                                        Currently Unavailable
+                                    </div>
+                                @endif
+
                             </div>
                         </article>
+
                     @endforeach
+
                 </div>
 
-                <div class="empty" id="noResults" style="display:none;margin-top:20px;">
+                <div
+                    class="empty"
+                    id="noResults"
+                    style="display:none;margin-top:20px;"
+                >
                     No dishes match your search. Try another name or category.
                 </div>
+
             @endif
+
         </section>
 
         <section class="features">
             <div class="section">
+
                 <div class="section-heading">
                     <span class="eyebrow">Why Choose Us</span>
                     <h2>A Little More Than Just Food</h2>
-                    <p>Good ingredients, thoughtful preparation and a welcoming experience.</p>
+
+                    <p>
+                        Good ingredients, thoughtful preparation
+                        and a welcoming experience.
+                    </p>
                 </div>
 
                 <div class="feature-grid">
+
                     <div class="feature">
                         <div class="feature-icon">🥬</div>
                         <h3>Quality Ingredients</h3>
-                        <p>We believe great dishes start with carefully selected ingredients.</p>
+                        <p>
+                            We believe great dishes start with carefully
+                            selected ingredients.
+                        </p>
                     </div>
 
                     <div class="feature">
                         <div class="feature-icon">👨‍🍳</div>
                         <h3>Made with Care</h3>
-                        <p>Every meal deserves attention, flavour and a little extra love.</p>
+                        <p>
+                            Every meal deserves attention, flavour
+                            and a little extra love.
+                        </p>
                     </div>
 
                     <div class="feature">
                         <div class="feature-icon">❤️</div>
                         <h3>Made for Sharing</h3>
-                        <p>A welcoming place to enjoy food and create memorable moments.</p>
+                        <p>
+                            A welcoming place to enjoy food and create
+                            memorable moments.
+                        </p>
                     </div>
+
                 </div>
             </div>
         </section>
@@ -531,23 +720,36 @@
         <section class="cta">
             <h2>Good Food Brings Us Together</h2>
             <p>Explore the menu and find your next favourite dish.</p>
-            <a href="#menu" class="btn btn-primary">View the Menu</a>
+
+            <a href="#menu" class="btn btn-primary">
+                View the Menu
+            </a>
         </section>
     </main>
 
     <footer>
         <strong>OUR RESTAURANT</strong>
+
         <p>Delicious moments start here.</p>
+
         <p>
             <a href="{{ url('/') }}">Home</a>
             <a href="{{ route('menu.public') }}">Our Menu</a>
             <a href="{{ url('/blog') }}">Blog</a>
             <a href="{{ url('/about') }}">About Us</a>
+            <a href="{{ route('cart.index') }}">My Cart</a>
         </p>
-        <p>© {{ date('Y') }} Our Restaurant. All rights reserved.</p>
+
+        <p>
+            © {{ date('Y') }} Our Restaurant. All rights reserved.
+        </p>
     </footer>
 
+    {{-- SweetAlert2 --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
+        // Menu search and category filters
         const searchInput = document.getElementById('menuSearch');
         const filterButtons = document.querySelectorAll('.filter-btn');
         const foodCards = document.querySelectorAll('.food-card');
@@ -556,6 +758,8 @@
         let activeCategory = 'all';
 
         function filterMenu() {
+            if (!searchInput) return;
+
             const searchTerm = searchInput.value.toLowerCase().trim();
             let visibleCount = 0;
 
@@ -564,6 +768,7 @@
                 const category = card.dataset.category || '';
 
                 const matchesSearch = name.includes(searchTerm);
+
                 const matchesCategory =
                     activeCategory === 'all' ||
                     category.toLowerCase() === activeCategory.toLowerCase();
@@ -572,28 +777,114 @@
 
                 card.style.display = visible ? '' : 'none';
 
-                if (visible) {
-                    visibleCount++;
-                }
+                if (visible) visibleCount++;
             });
 
             if (noResults) {
-                noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+                noResults.style.display =
+                    visibleCount === 0 ? 'block' : 'none';
             }
         }
 
-        searchInput.addEventListener('input', filterMenu);
+        if (searchInput) {
+            searchInput.addEventListener('input', filterMenu);
+        }
 
         filterButtons.forEach(button => {
             button.addEventListener('click', () => {
-                activeCategory = button.dataset.category;
+                activeCategory = button.dataset.category || 'all';
 
-                filterButtons.forEach(item => item.classList.remove('active'));
+                filterButtons.forEach(item => {
+                    item.classList.remove('active');
+                });
+
                 button.classList.add('active');
-
                 filterMenu();
             });
         });
+
+        // Add-to-cart confirmation popup
+        document.querySelectorAll('.add-to-cart-form').forEach(form => {
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                if (!form.reportValidity()) return;
+
+                const itemName =
+                    form.closest('.food-card')?.querySelector('h3')?.textContent.trim()
+                    || 'this item';
+
+                const submitButton = form.querySelector('button[type="submit"]');
+
+                Swal.fire({
+                    title: 'Add to Cart?',
+                    text: `Would you like to add ${itemName} to your cart?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#b45325',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, add it!',
+                    cancelButtonText: 'Cancel',
+                    reverseButtons: true
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        submitButton.disabled = true;
+                        submitButton.textContent = 'Adding...';
+                        form.submit();
+                    }
+                });
+            });
+        });
+
+        // Display Laravel session messages as SweetAlert popups
+        document.addEventListener('DOMContentLoaded', function () {
+            const successMessage =
+                document.getElementById('cart-success-message')?.textContent.trim();
+
+            const errorMessage =
+                document.getElementById('cart-error-message')?.textContent.trim();
+
+            const validationContainer =
+                document.getElementById('cart-validation-errors');
+
+            const validationErrors = validationContainer
+                ? Array.from(validationContainer.querySelectorAll('div'))
+                    .map(el => el.textContent.trim())
+                    .filter(Boolean)
+                : [];
+
+            if (successMessage) {
+                Swal.fire({
+                    title: 'Added to Cart!',
+                    text: successMessage,
+                    icon: 'success',
+                    confirmButtonColor: '#b45325',
+                    confirmButtonText: 'Continue Shopping'
+                });
+            } else if (errorMessage) {
+                Swal.fire({
+                    title: 'Unable to Add Item',
+                    text: errorMessage,
+                    icon: 'error',
+                    confirmButtonColor: '#b45325'
+                });
+            } else if (validationErrors.length) {
+                Swal.fire({
+                    title: 'Please Check Your Input',
+                    html: validationErrors.map(message =>
+                        `<div>${escapeHtml(message)}</div>`
+                    ).join(''),
+                    icon: 'warning',
+                    confirmButtonColor: '#b45325'
+                });
+            }
+        });
+
+        function escapeHtml(value) {
+            const element = document.createElement('div');
+            element.textContent = value;
+            return element.innerHTML;
+        }
     </script>
 
 </body>

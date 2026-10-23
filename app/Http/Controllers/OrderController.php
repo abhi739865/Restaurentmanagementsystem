@@ -112,9 +112,9 @@ class OrderController extends Controller
             return $order;
         });
 
-        return redirect()
-            ->route('orders.index')
-            ->with('success', 'Order successfully create ho gaya. Order: ' . $order->order_number);
+                return redirect()
+                ->route('orders.show', $order)
+                ->with('success', 'Order successfully create ho gaya.');
     }
 
     public function show(Order $order)

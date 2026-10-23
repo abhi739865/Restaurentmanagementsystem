@@ -9,17 +9,19 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Order extends Model
 {
     protected $fillable = [
-        'restaurant_table_id',
-        'order_number',
-        'customer_name',
-        'order_type',
-        'status',
-        'subtotal',
-        'tax',
-        'total_amount',
-        'payment_status',
-        'notes',
-    ];
+    'restaurant_table_id',
+    'order_number',
+    'customer_name',
+    'phone',
+    'address',
+    'order_type',
+    'status',
+    'subtotal',
+    'tax',
+    'total_amount',
+    'payment_status',
+    'notes',
+];
 
     protected function casts(): array
     {

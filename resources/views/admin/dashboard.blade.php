@@ -1,82 +1,375 @@
 
 <x-app-layout>
     <x-slot name="header">
-        <h2 style="font-size:24px;font-weight:bold;color:#111827;">
-            Admin Dashboard
-        </h2>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+            <h2 style="font-size:24px;font-weight:800;color:#111827;">
+                Admin Dashboard
+            </h2>
+            <span style="font-size:13px;color:#64748b;">
+                {{ now()->format('d M Y') }}
+            </span>
+        </div>
     </x-slot>
 
-    <div style="max-width:1200px;margin:30px auto;padding:20px;">
+    <style>
+        .admin-card {
+            background: white;
+            padding: 22px;
+            border: 1px solid #e8ecf3;
+            border-radius: 13px;
+            box-shadow: 0 3px 12px rgba(15, 23, 42, .025);
+        }
 
-        <h3 style="font-size:24px;font-weight:bold;margin-bottom:8px;">
-            Welcome, {{ Auth::user()->name }}!
-        </h3>
+        .admin-stat-label {
+            color: #64748b;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
 
-        <p style="color:#6b7280;margin-bottom:25px;">
-            Manage your restaurant from the admin panel.
-        </p>
+        .admin-stat-value {
+            color: #172238;
+            font-size: 27px;
+            font-weight: 800;
+            overflow-wrap: anywhere;
+        }
 
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;">
+        .admin-stat-icon {
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 11px;
+            font-size: 20px;
+            margin-bottom: 16px;
+        }
 
-            <a href="{{ route('orders.index') }}"
-               style="background:white;padding:24px;border:1px solid #e5e7eb;border-radius:10px;text-decoration:none;color:#111827;">
-                <h3 style="font-size:20px;font-weight:bold;margin-bottom:10px;">Orders</h3>
-                <p style="color:#6b7280;">View and manage restaurant orders.</p>
-            </a>
+        .admin-section-title {
+            font-size: 17px;
+            font-weight: 800;
+            color: #172238;
+        }
 
-            <a href="{{ url('/menu-items') }}"
-               style="background:white;padding:24px;border:1px solid #e5e7eb;border-radius:10px;text-decoration:none;color:#111827;">
-                <h3 style="font-size:20px;font-weight:bold;margin-bottom:10px;">Menu Items</h3>
-                <p style="color:#6b7280;">Manage food items and prices.</p>
-            </a>
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 650px;
+        }
 
-            <a href="{{ url('/categories') }}"
-               style="background:white;padding:24px;border:1px solid #e5e7eb;border-radius:10px;text-decoration:none;color:#111827;">
-                <h3 style="font-size:20px;font-weight:bold;margin-bottom:10px;">Categories</h3>
-                <p style="color:#6b7280;">Organize your restaurant menu.</p>
-            </a>
+        .admin-table th {
+            background: #f8fafc;
+            color: #64748b;
+            font-size: 12px;
+            text-align: left;
+            padding: 14px;
+        }
 
-            <a href="{{ url('/restaurant-tables') }}"
-               style="background:white;padding:24px;border:1px solid #e5e7eb;border-radius:10px;text-decoration:none;color:#111827;">
-                <h3 style="font-size:20px;font-weight:bold;margin-bottom:10px;">Restaurant Tables</h3>
-                <p style="color:#6b7280;">Manage seating and table availability.</p>
-            </a>
+        .admin-table td {
+            padding: 15px 14px;
+            border-bottom: 1px solid #eef2f7;
+            font-size: 13px;
+            color: #334155;
+        }
 
-            <a href="{{ route('inventory-items.index') }}"
-               style="background:white;padding:24px;border:1px solid #e5e7eb;border-radius:10px;text-decoration:none;color:#111827;">
-                <h3 style="font-size:20px;font-weight:bold;margin-bottom:10px;">Food Inventory</h3>
-                <p style="color:#6b7280;">Manage restaurant stock.</p>
-            </a>
+        .admin-table-wrap {
+            overflow-x: auto;
+        }
 
-            <a href="{{ route('admin.users.index') }}"
-               style="background:white;padding:24px;border:1px solid #e5e7eb;border-radius:10px;text-decoration:none;color:#111827;">
-                <h3 style="font-size:20px;font-weight:bold;margin-bottom:10px;">Manage Users</h3>
-                <p style="color:#6b7280;">Manage restaurant user accounts.</p>
-            </a>
+        .admin-status {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 20px;
+            background: #f1f5f9;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: capitalize;
+        }
 
-            {{-- Blog Management --}}
-            <div style="background:white;padding:24px;border:1px solid #e5e7eb;border-radius:10px;">
-                <h3 style="font-size:20px;font-weight:bold;margin-bottom:10px;color:#111827;">
-                    Blog Management
-                </h3>
+        .admin-action {
+            color: #2563eb;
+            font-weight: 700;
+            text-decoration: none;
+        }
+    </style>
 
-                <p style="color:#6b7280;margin-bottom:18px;">
-                    Create new blogs and edit existing blog posts.
+    <div style="background:#f4f6fb;padding:28px;min-height:calc(100vh - 80px);">
+
+            <div style="margin-bottom:25px;">
+                <h1 style="font-size:25px;font-weight:800;color:#172238;">
+                    Welcome back, {{ Auth::user()->name }} 👋
+                </h1>
+
+                <p style="color:#64748b;font-size:14px;margin-top:6px;">
+                    Here is what's happening in your restaurant.
                 </p>
+            </div>
 
-                <div style="display:flex;flex-wrap:wrap;gap:10px;">
-                    <a href="{{ route('admin.blogs.create') }}"
-                       style="display:inline-block;padding:10px 14px;background:#16a34a;color:white;text-decoration:none;border-radius:6px;">
-                        + Add Blog
-                    </a>
+            {{-- ANALYTICS CARDS --}}
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:17px;margin-bottom:22px;">
 
-                    <a href="{{ route('admin.blogs.index') }}"
-                       style="display:inline-block;padding:10px 14px;background:#7c3aed;color:white;text-decoration:none;border-radius:6px;">
-                        Manage / Edit Blogs
-                    </a>
+                <div class="admin-card">
+                    <div class="admin-stat-icon" style="background:#dbeafe;color:#1d4ed8;">🛒</div>
+                    <p class="admin-stat-label">Total Orders</p>
+                    <div class="admin-stat-value">{{ $stats['total_orders'] }}</div>
+                </div>
+
+                <div class="admin-card">
+                    <div class="admin-stat-icon" style="background:#dcfce7;color:#15803d;">₹</div>
+                    <p class="admin-stat-label">Total Paid Revenue</p>
+                    <div class="admin-stat-value" style="font-size:23px;">
+                        ₹{{ number_format((float)$stats['total_revenue'], 2) }}
+                    </div>
+                </div>
+
+                <div class="admin-card">
+                    <div class="admin-stat-icon" style="background:#fef3c7;color:#b45309;">◷</div>
+                    <p class="admin-stat-label">Today's Paid Sales</p>
+                    <div class="admin-stat-value" style="font-size:23px;">
+                        ₹{{ number_format((float)$stats['today_sales'], 2) }}
+                    </div>
+                </div>
+
+                <div class="admin-card">
+                    <div class="admin-stat-icon" style="background:#ffedd5;color:#c2410c;">!</div>
+                    <p class="admin-stat-label">Pending Orders</p>
+                    <div class="admin-stat-value">{{ $stats['pending_orders'] }}</div>
+                </div>
+
+                <div class="admin-card">
+                    <div class="admin-stat-icon" style="background:#d1fae5;color:#047857;">✓</div>
+                    <p class="admin-stat-label">Completed Orders</p>
+                    <div class="admin-stat-value">{{ $stats['completed_orders'] }}</div>
+                </div>
+
+                <div class="admin-card">
+                    <div class="admin-stat-icon" style="background:#ede9fe;color:#6d28d9;">₹</div>
+                    <p class="admin-stat-label">Paid Orders</p>
+                    <div class="admin-stat-value">{{ $stats['paid_orders'] }}</div>
                 </div>
             </div>
 
-        </div>
+            {{-- CHARTS --}}
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:20px;margin-bottom:22px;">
+
+                <section class="admin-card">
+                    <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:20px;">
+                        <div>
+                            <h3 class="admin-section-title">Sales Analytics</h3>
+                            <p style="color:#94a3b8;font-size:12px;margin-top:5px;">
+                                Paid revenue · Last 6 months
+                            </p>
+                        </div>
+                        <span style="background:#dcfce7;color:#166534;padding:6px 10px;border-radius:7px;font-size:12px;">
+                            Monthly
+                        </span>
+                    </div>
+
+                    <div style="height:280px;position:relative;">
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                </section>
+
+                <section class="admin-card">
+                    <h3 class="admin-section-title">Order Status Analysis</h3>
+                    <p style="color:#94a3b8;font-size:12px;margin-top:5px;margin-bottom:15px;">
+                        Orders by current status
+                    </p>
+
+                    <div style="height:245px;position:relative;">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+
+                    <div style="text-align:center;color:#64748b;font-size:12px;margin-top:10px;">
+                        Total orders: {{ $stats['total_orders'] }}
+                    </div>
+                </section>
+            </div>
+
+            {{-- RECENT ORDERS --}}
+            <section class="admin-card" style="padding:0;overflow:hidden;">
+                <div style="padding:22px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+                    <div>
+                        <h3 class="admin-section-title">Recent Orders</h3>
+                        <p style="font-size:12px;color:#94a3b8;margin-top:5px;">
+                            Latest 8 restaurant orders
+                        </p>
+                    </div>
+
+                    <a href="{{ route('orders.index') }}"
+                       style="background:#172238;color:white;padding:10px 14px;border-radius:7px;text-decoration:none;font-size:12px;font-weight:700;">
+                        View All Orders →
+                    </a>
+                </div>
+
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ORDER NUMBER</th>
+                                <th>CUSTOMER</th>
+                                <th>DATE</th>
+                                <th>AMOUNT</th>
+                                <th>STATUS</th>
+                                <th>ACTION</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @forelse($recentOrders as $order)
+                                <tr>
+                                    <td style="font-weight:700;">
+                                        {{ $order->order_number }}
+                                    </td>
+
+                                    <td>
+                                        {{ $order->customer_name ?: 'Walk-in Customer' }}
+                                    </td>
+
+                                    <td>
+                                        {{ $order->created_at?->format('d M Y') }}
+                                    </td>
+
+                                    <td style="font-weight:700;">
+                                        ₹{{ number_format((float)$order->total_amount, 2) }}
+                                    </td>
+
+                                    <td>
+                                        <span class="admin-status">
+                                            {{ str_replace('_', ' ', $order->status) }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <a class="admin-action"
+                                           href="{{ route('orders.show', $order) }}">
+                                            View →
+                                        </a>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6" style="text-align:center;padding:30px;color:#94a3b8;">
+                                        No orders found yet.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <p style="text-align:center;font-size:12px;color:#94a3b8;margin-top:25px;">
+                Restaurant Management System · Admin Analytics
+            </p>
     </div>
+
+    {{-- Charts library --}}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        const salesCanvas = document.getElementById('salesChart');
+        const statusCanvas = document.getElementById('statusChart');
+
+        const salesLabels = @json($monthlySales['labels']);
+        const salesValues = @json($monthlySales['values']);
+
+        const statusLabels = @json($statusLabels);
+        const statusValues = @json($statusValues);
+
+        if (salesCanvas && window.Chart) {
+            new Chart(salesCanvas, {
+                type: 'line',
+                data: {
+                    labels: salesLabels,
+                    datasets: [{
+                        label: 'Paid Revenue (₹)',
+                        data: salesValues,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.12)',
+                        fill: true,
+                        tension: 0.38,
+                        borderWidth: 3,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return '₹' + Number(context.raw).toLocaleString('en-IN', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2
+                                    });
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#eef2f7'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '₹' + Number(value).toLocaleString('en-IN');
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        if (statusCanvas && window.Chart) {
+            new Chart(statusCanvas, {
+                type: 'doughnut',
+                data: {
+                    labels: statusLabels,
+                    datasets: [{
+                        data: statusValues,
+                        backgroundColor: [
+                            '#f59e0b',
+                            '#3b82f6',
+                            '#8b5cf6',
+                            '#10b981',
+                            '#ef4444'
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '66%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 16
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
 </x-app-layout>
